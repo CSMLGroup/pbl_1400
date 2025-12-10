@@ -24,6 +24,7 @@ try {
   app.use('/projects', require('../routes/projects'));
   app.use('/resources', require('../routes/resources'));
   app.use('/about', require('../routes/about'));
+  app.use('/api/execute', require('../routes/execute'));
 } catch (error) {
   console.error('Error loading routes:', error);
 }
