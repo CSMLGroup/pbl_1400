@@ -32,6 +32,39 @@ router.post('/', (req, res) => {
     });
     let output = '';
     let errorOutput = '';
+    let processStarted = false;
+    
+    // Track if process actually started
+    python.on('error', (err) => {
+      processStarted = false;
+      // Handle the case where Python is not available
+      if (err.code === 'ENOENT') {
+        try { 
+          fs.unlinkSync(tempFile); 
+        } catch (e) {}
+        
+        return res.json({
+          success: false,
+          output: 'Error: Python 3 is not available on this server. This feature is only available in local development.',
+          error: true
+        });
+      }
+      
+      try { 
+        fs.unlinkSync(tempFile); 
+      } catch (e) {}
+      
+      return res.json({
+        success: false,
+        output: `Error executing code: ${err.message}`,
+        error: true
+      });
+    });
+    
+    // Set flag when process spawns successfully
+    setTimeout(() => {
+      processStarted = true;
+    }, 100);
 
     // Handle stdout
     python.stdout.on('data', (data) => {
@@ -64,19 +97,6 @@ router.post('/', (req, res) => {
         success: true,
         output: output || '(Code executed successfully - no output)',
         error: false
-      });
-    });
-
-    // Handle spawn errors
-    python.on('error', (err) => {
-      try { 
-        fs.unlinkSync(tempFile); 
-      } catch (e) {}
-      
-      return res.json({
-        success: false,
-        output: `Error executing code: ${err.message}`,
-        error: true
       });
     });
 
