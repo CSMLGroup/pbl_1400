@@ -1,6 +1,14 @@
 {
   "version": 2,
+  "buildCommand": "npm install",
   "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/node",
+      "config": {
+        "nodeVersion": "18.x"
+      }
+    },
     {
       "src": "api/index.js",
       "use": "@vercel/node"
@@ -8,8 +16,15 @@
   ],
   "routes": [
     {
+      "src": "/public/(.*)",
+      "dest": "/public/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "api/index.js"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
