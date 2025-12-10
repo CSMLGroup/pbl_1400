@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+        }
+
+        .navbar {
+            flex-shrink: 0;
+        }
+
+        .editor-workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 6px;
+            padding: 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar h3 {
+            color: #4ec9b0;
+            margin: 15px 0 10px 0;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            border-bottom: 2px solid #6366f1;
+            padding-bottom: 8px;
+        }
+
+        .sidebar h3:first-child {
+            margin-top: 0;
+        }
+
+        .project-badge {
+            display: inline-block;
+            background: #6366f1;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            margin: 3px 3px 3px 0;
+            font-weight: 600;
+        }
+
+        .project-badge.difficulty {
+            background: #f59e0b;
+        }
+
+        .hint-item, .topic-item {
+            background: #2d2d30;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid #6366f1;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: #cccccc;
+            line-height: 1.4;
+        }
+
+        .topic-item {
+            border-left-color: #4ec9b0;
+        }
+
+        .btn-back {
+            display: block;
+            margin-bottom: 15px;
+            padding: 8px 12px;
+            background: #4ec9b0;
+            color: #1e1e1e;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: #5ed3bf;
+        }
+
+        /* Main Editor Area */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .editor-toolbar {
+            background: #2d2d30;
+            border-bottom: 1px solid #3e3e42;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .editor-toolbar h2 {
+            font-size: 1rem;
+            color: #cccccc;
+            margin: 0;
+        }
+
+        .toolbar-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-editor {
+            padding: 8px 14px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-editor:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+        }
+
+        .btn-editor.secondary {
+            background: #3e3e42;
+            color: #d4d4d4;
+        }
+
+        .btn-editor.secondary:hover {
+            background: #4a4a50;
+        }
+
+        .editor-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 1px;
+            background: #1e1e1e;
+        }
+
+        /* Code Editor */
+        .code-editor-wrapper {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .CodeMirror {
+            height: 100% !important;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+            font-size: 13px !important;
+        }
+
+        /* Input/Output Panel */
+        .io-panel {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            background: #1e1e1e;
+            border-left: 1px solid #3e3e42;
+        }
+
+        .io-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid #3e3e42;
+            overflow: hidden;
+        }
+
+        .io-section:last-child {
+            border-bottom: none;
+        }
+
+        .io-header {
+            background: #2d2d30;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #cccccc;
+            border-bottom: 1px solid #3e3e42;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .io-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #d4d4d4;
+        }
+
+        .io-content.empty {
+            color: #6a6a6a;
+            font-style: italic;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 8px 12px;
+            background: #2d2d30;
+            border: none;
+            border-top: 1px solid #3e3e42;
+            color: #d4d4d4;
+            font-family: inherit;
+            font-size: 12px;
+            resize: none;
+            outline: none;
+        }
+
+        .input-box:focus {
+            background: #3a3a3f;
+        }
+
+        .output-success {
+            color: #4ec9b0;
+        }
+
+        .output-error {
+            color: #f48771;
+        }
+
+        .output-info {
+            color: #9cdcfe;
+        }
+
+        /* Footer */
+        .footer {
+            display: none;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #252526;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3e3e42;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a4a50;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 230px;
+                padding: 15px;
+            }
+
+            .io-panel {
+                width: 35%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .editor-workspace {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 150px;
+                padding: 12px;
+            }
+
+            .io-panel {
+                width: 100%;
+                max-height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1>PBAL</h1>
+                <span class="subtitle">Project-Based AI Learning</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/projects" class="nav-link">Projects</a></li>
+                <li><a href="/resources" class="nav-link">Resources</a></li>
+                <li><a href="/about" class="nav-link">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="editor-workspace">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <a href="/projects/<%= project.id %>" class="btn-back">← Back</a>
+
+            <div>
+                <h3>📋 Project</h3>
+                <div style="font-size: 0.9rem; margin-bottom: 12px; color: #cccccc;">
+                    <strong><%= project.title %></strong>
+                </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+                    <span class="project-badge difficulty"><%= project.difficulty %></span>
+                    <span class="project-badge">⏱️ <%= project.estimatedTime %></span>
+                </div>
+            </div>
+
+            <h3>📚 Topics</h3>
+            <% project.topics.forEach(topic => { %>
+                <div class="topic-item">✓ <%= topic %></div>
+            <% }); %>
+
+            <h3>💡 Hints</h3>
+            <% project.hints.forEach(hint => { %>
+                <div class="hint-item"><%= hint %></div>
+            <% }); %>
+
+            <h3>🔧 AI Features</h3>
+            <% project.aiFeatures.forEach(feature => { %>
+                <div class="topic-item"><span style="color: #ce9178;">►</span> <%= feature %></div>
+            <% }); %>
+        </div>
+
+        <!-- Main Editor Area -->
+        <div class="editor-area">
+            <div class="editor-toolbar">
+                <h2>🔤 Code Editor - <%= project.language.toUpperCase() %></h2>
+                <div class="toolbar-buttons">
+                    <button class="btn-editor" onclick="runCode()">▶ Run</button>
+                    <button class="btn-editor secondary" onclick="resetCode()">↺ Reset</button>
+                    <button class="btn-editor secondary" onclick="downloadCode()">⬇ Download</button>
+                    <button class="btn-editor secondary" onclick="clearOutput()">🗑️ Clear</button>
+                </div>
+            </div>
+
+            <div class="editor-content">
+                <!-- Code Editor -->
+                <div class="code-editor-wrapper">
+                    <textarea id="codeEditor"></textarea>
+                </div>
+
+                <!-- Input/Output Panel -->
+                <div class="io-panel">
+                    <!-- Input Section -->
+                    <div class="io-section">
+                        <div class="io-header">📥 Input</div>
+                        <textarea id="inputBox" class="input-box" placeholder="Enter input here (if needed)..." rows="3"></textarea>
+                    </div>
+
+                    <!-- Output Section -->
+                    <div class="io-section">
+                        <div class="io-header">📤 Output Console</div>
+                        <div class="io-content empty" id="outputBox">
+                            Output will appear here...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CodeMirror Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+
+    <script>
+        const starterCode = `<%= project.starterCode %>`;
+        const projectId = <%= project.id %>;
+        const projectTitle = '<%= project.title.replace(/'/g, "\\'") %>';
+
+        // Initialize CodeMirror
+        const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+            lineNumbers: true,
+            mode: '<%= project.language === "python" ? "python" : "javascript" %>',
+            theme: 'material-darker',
+            indentUnit: 4,
+            indentWithTabs: false,
+            lineWrapping: true,
+            matchBrackets: true,
+            autoCloseBrackets: true,
+            styleActiveLine: true,
+            styleSelectedText: true,
+            showCursorWhenSelecting: true,
+            scrollbarStyle: 'native'
+        });
+
+        // Set initial code
+        editor.setValue(starterCode);
+
+        // Load from localStorage
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem(`projectCode_${projectId}`);
+            if (saved) {
+                editor.setValue(saved);
+            }
+        });
+
+        // Auto-save to localStorage
+        editor.on('change', () => {
+            localStorage.setItem(`projectCode_${projectId}`, editor.getValue());
+        });
+
+        // Run Code
+        function runCode() {
+            const code = editor.getValue();
+            const input = document.getElementById('inputBox').value;
+            const output = document.getElementById('outputBox');
+
+            output.classList.remove('empty');
+            output.innerHTML = '<span class="output-info">⏳ Executing code...</span>';
+
+            // Send code to backend for execution
+            fetch('/api/execute', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code, input })
+            })
+            .then(response => response.json())
+            .then(data => {
+                output.classList.remove('empty');
+                let result = '';
+                result += `<span class="output-info">▶ Code Execution Completed</span>\n`;
+                result += `<span class="output-info">────────────────────────</span>\n`;
+
+                if (input.trim()) {
+                    result += `\n<span class="output-info">📥 Input:</span>\n${input}\n`;
+                }
+
+                result += `\n<span class="output-info">📤 Output:</span>\n`;
+                if (data.error) {
+                    result += `<span class="output-error">${escapeHtml(data.output)}</span>`;
+                } else {
+                    result += `<span class="output-success">${escapeHtml(data.output)}</span>`;
+                }
+                result += `\n<span class="output-info">────────────────────────</span>`;
+
+                output.innerHTML = result;
+                output.scrollTop = output.scrollHeight;
+            })
+            .catch(error => {
+                output.classList.remove('empty');
+                output.innerHTML = `<span class="output-error">❌ Error: ${error.message}</span>`;
+            });
+        }
+
+        // Escape HTML special characters
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Reset Code
+        function resetCode() {
+            if (confirm('Reset to starter code? Your changes will be lost.')) {
+                editor.setValue(starterCode);
+                clearOutput();
+            }
+        }
+
+        // Download Code
+        function downloadCode() {
+            const code = editor.getValue();
+            const element = document.createElement('a');
+            const file = new Blob([code], { type: 'text/plain' });
+            element.href = URL.createObjectURL(file);
+            element.download = `${projectTitle.replace(/\s+/g, '_')}.py`;
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+
+            const output = document.getElementById('outputBox');
+            output.classList.remove('empty');
+            output.innerHTML = `<span class="output-success">✓ Code downloaded successfully!</span>`;
+        }
+
+        // Clear Output
+        function clearOutput() {
+            const output = document.getElementById('outputBox');
+            output.classList.add('empty');
+            output.innerHTML = 'Output will appear here...';
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + Enter to run
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                runCode();
+            }
+        });
+    </script>
+</body>
+</html>

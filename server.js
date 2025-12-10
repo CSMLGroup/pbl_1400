@@ -25,6 +25,9 @@ app.use('/projects', require('./routes/projects'));
 app.use('/resources', require('./routes/resources'));
 app.use('/about', require('./routes/about'));
 
+// API Routes (must be before 404 handler)
+app.use('/api/execute', require('./routes/execute'));
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).render('404', { title: 'Page Not Found' });
