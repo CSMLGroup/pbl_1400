@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { execSync } = require('child_process');
+const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -20,54 +20,98 @@ router.post('/', (req, res) => {
 
     // Create temporary file
     const tempDir = os.tmpdir();
-    const tempFile = path.join(tempDir, `pbl_${Date.now()}.py`);
+    const tempFile = path.join(tempDir, `pbl_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.py`);
 
     // Write code to temporary file
     fs.writeFileSync(tempFile, code);
 
-    try {
-      // Execute the Python code with timeout
-      let command = `python3 ${tempFile}`;
-      
-      // If input is provided, pipe it to stdin
-      if (input && input.trim()) {
-        const inputFile = path.join(tempDir, `pbl_input_${Date.now()}.txt`);
-        fs.writeFileSync(inputFile, input);
-        command = `python3 ${tempFile} < ${inputFile}`;
+    // Spawn Python process with proper stdio configuration
+    const python = spawn('python3', [tempFile], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 10000
+    });
+    let output = '';
+    let errorOutput = '';
+
+    // Handle stdout
+    python.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+
+    // Handle stderr
+    python.stderr.on('data', (data) => {
+      errorOutput += data.toString();
+    });
+
+    // Handle process end
+    python.on('close', (code) => {
+      // Clean up temp file
+      try { 
+        fs.unlinkSync(tempFile); 
+      } catch (e) {
+        console.error('Failed to delete temp file:', e);
       }
 
-      const output = execSync(command, {
-        timeout: 5000, // 5 second timeout
-        encoding: 'utf-8',
-        stdio: 'pipe'
-      });
-
-      // Clean up
-      fs.unlinkSync(tempFile);
-      if (input && input.trim()) {
-        fs.unlinkSync(path.join(tempDir, `pbl_input_${Date.now()}.txt`));
+      if (code !== 0 && errorOutput) {
+        return res.json({
+          success: false,
+          output: errorOutput,
+          error: true
+        });
       }
 
-      return res.json({
+      res.json({
         success: true,
-        output: output || '(No output)',
+        output: output || '(Code executed successfully - no output)',
         error: false
       });
-    } catch (execError) {
-      // Clean up
-      try { fs.unlinkSync(tempFile); } catch (e) {}
+    });
 
-      const errorMessage = execError.stderr || execError.message || String(execError);
+    // Handle spawn errors
+    python.on('error', (err) => {
+      try { 
+        fs.unlinkSync(tempFile); 
+      } catch (e) {}
+      
       return res.json({
         success: false,
-        output: errorMessage,
+        output: `Error executing code: ${err.message}`,
         error: true
       });
+    });
+
+    // Send input if provided
+    if (input && input.trim()) {
+      // Send input with proper line endings
+      let inputData = input;
+      // Ensure input ends with newline
+      if (!inputData.endsWith('\n')) {
+        inputData += '\n';
+      }
+      python.stdin.write(inputData);
     }
+    python.stdin.end();
+
+    // Timeout after 10 seconds
+    setTimeout(() => {
+      if (python.exitCode === null) {
+        python.kill();
+        try { 
+          fs.unlinkSync(tempFile); 
+        } catch (e) {}
+        
+        res.json({
+          success: false,
+          output: 'Error: Code execution timeout (exceeded 10 seconds)',
+          error: true
+        });
+      }
+    }, 10000);
+
   } catch (error) {
     return res.json({
       success: false,
-      output: `Error: ${error.message}`,
+      output: `Server Error: ${error.message}`,
       error: true
     });
   }
