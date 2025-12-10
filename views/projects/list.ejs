@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Project-Based AI Learning</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1>PBAL</h1>
+                <span class="subtitle">Project-Based AI Learning</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/projects" class="nav-link">Projects</a></li>
+                <li><a href="/resources" class="nav-link">Resources</a></li>
+                <li><a href="/about" class="nav-link">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1><%= title %></h1>
+                <p>Choose from our curated collection of programming projects designed to make learning fun and engaging.</p>
+            </div>
+        </section>
+
+        <section class="projects-section">
+            <div class="container">
+                <div class="projects-grid-large">
+                    <% projects.forEach(project => { %>
+                        <div class="project-card-large">
+                            <div class="project-header">
+                                <h2><%= project.title %></h2>
+                                <span class="difficulty difficulty-<%= project.difficulty.toLowerCase() %>"><%= project.difficulty %></span>
+                            </div>
+                            <p class="project-description"><%= project.description %></p>
+                            
+                            <div class="project-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">⏱️ Time:</span>
+                                    <span><%= project.estimatedTime %></span>
+                                </div>
+                            </div>
+
+                            <div class="topics">
+                                <span class="meta-label">📚 Topics:</span>
+                                <div class="topic-list">
+                                    <% project.topics.forEach(topic => { %>
+                                        <span class="topic-tag"><%= topic %></span>
+                                    <% }); %>
+                                </div>
+                            </div>
+
+                            <div class="ai-features">
+                                <span class="meta-label">🤖 AI Features:</span>
+                                <div class="feature-list">
+                                    <% project.aiFeatures.forEach(feature => { %>
+                                        <span class="feature-tag"><%= feature %></span>
+                                    <% }); %>
+                                </div>
+                            </div>
+
+                            <a href="/projects/<%= project.id %>" class="btn btn-primary">View Project Details</a>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Project-Based AI Learning Initiative. CS 1400: Fundamentals of Programming</p>
+            <p>Enhancing student engagement through AI-driven project-based learning.</p>
+        </div>
+    </footer>
+</body>
+</html>

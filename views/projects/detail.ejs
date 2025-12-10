@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Project-Based AI Learning</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1>PBAL</h1>
+                <span class="subtitle">Project-Based AI Learning</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/projects" class="nav-link">Projects</a></li>
+                <li><a href="/resources" class="nav-link">Resources</a></li>
+                <li><a href="/about" class="nav-link">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <section class="project-detail">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="/projects">Projects</a> > <span><%= project.title %></span>
+                </div>
+
+                <div class="project-detail-header">
+                    <h1><%= project.title %></h1>
+                    <div class="project-badges">
+                        <span class="badge difficulty difficulty-<%= project.difficulty.toLowerCase() %>"><%= project.difficulty %></span>
+                        <span class="badge time">⏱️ <%= project.estimatedTime %></span>
+                    </div>
+                </div>
+
+                <p class="project-description-main"><%= project.description %></p>
+
+                <div class="project-content">
+                    <div class="project-sidebar">
+                        <div class="sidebar-card">
+                            <h3>📚 Learning Topics</h3>
+                            <ul class="topic-list-full">
+                                <% project.topics.forEach(topic => { %>
+                                    <li><%= topic %></li>
+                                <% }); %>
+                            </ul>
+                        </div>
+
+                        <div class="sidebar-card">
+                            <h3>🤖 AI Features</h3>
+                            <ul class="feature-list-full">
+                                <% project.aiFeatures.forEach(feature => { %>
+                                    <li><%= feature %></li>
+                                <% }); %>
+                            </ul>
+                        </div>
+
+                        <div class="sidebar-card cta-card">
+                            <a href="#" class="btn btn-primary btn-block">Start This Project</a>
+                            <a href="/projects" class="btn btn-secondary btn-block">Back to Projects</a>
+                        </div>
+                    </div>
+
+                    <div class="project-main">
+                        <section class="section">
+                            <h2>Project Overview</h2>
+                            <p>This project is designed to help you develop critical programming skills through hands-on experience. You'll work with <%= project.topics.join(', ') %> concepts in a practical, real-world context.</p>
+                        </section>
+
+                        <section class="section">
+                            <h2>Learning Objectives</h2>
+                            <ul>
+                                <li>Master fundamental programming concepts through practical application</li>
+                                <li>Develop problem-solving and debugging skills</li>
+                                <li>Create a functional, real-world application</li>
+                                <li>Learn best practices in code organization and style</li>
+                            </ul>
+                        </section>
+
+                        <section class="section">
+                            <h2>How AI Enhances This Project</h2>
+                            <p>Our AI-powered platform provides:</p>
+                            <ul>
+                                <% project.aiFeatures.forEach(feature => { %>
+                                    <li><strong><%= feature %>:</strong> Personalized assistance tailored to your progress and learning style</li>
+                                <% }); %>
+                            </ul>
+                        </section>
+
+                        <section class="section">
+                            <h2>Getting Started</h2>
+                            <ol>
+                                <li>Review the project requirements and learning objectives</li>
+                                <li>Familiarize yourself with the key programming concepts</li>
+                                <li>Start with the provided starter code and scaffolding</li>
+                                <li>Implement features incrementally, testing as you go</li>
+                                <li>Use AI-generated hints and practice problems for support</li>
+                                <li>Submit your completed project for feedback</li>
+                            </ol>
+                        </section>
+
+                        <section class="section">
+                            <h2>Resources & Support</h2>
+                            <p>Access our comprehensive resource library for:</p>
+                            <ul>
+                                <li>Tutorials and documentation</li>
+                                <li>Code examples and best practices</li>
+                                <li>Debugging guides and troubleshooting tips</li>
+                                <li>Additional practice problems generated by AI</li>
+                            </ul>
+                            <a href="/resources" class="btn btn-secondary">Browse Resources</a>
+                        </section>
+
+                        <section class="section cta-final">
+                            <h2>Ready to Begin?</h2>
+                            <p>Start working on this project and track your progress. Our AI will provide personalized support every step of the way.</p>
+                            <a href="#" class="btn btn-primary btn-large">Start This Project</a>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Project-Based AI Learning Initiative. CS 1400: Fundamentals of Programming</p>
+            <p>Enhancing student engagement through AI-driven project-based learning.</p>
+        </div>
+    </footer>
+</body>
+</html>
