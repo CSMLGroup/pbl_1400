@@ -13,11 +13,20 @@ app.use(express.json());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
-// Routes
-app.use('/', require('../routes/index'));
-app.use('/projects', require('../routes/projects'));
-app.use('/resources', require('../routes/resources'));
-app.use('/about', require('../routes/about'));
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+try {
+  // Routes
+  app.use('/', require('../routes/index'));
+  app.use('/projects', require('../routes/projects'));
+  app.use('/resources', require('../routes/resources'));
+  app.use('/about', require('../routes/about'));
+} catch (error) {
+  console.error('Error loading routes:', error);
+}
 
 // 404 handler
 app.use((req, res) => {
@@ -26,7 +35,7 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error:', err);
   res.status(500).render('error', { 
     title: 'Server Error',
     message: 'Something went wrong!'
